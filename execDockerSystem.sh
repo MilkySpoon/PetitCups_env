@@ -15,7 +15,7 @@ if [[ $1 != "" ]]; then
     #statements
     echo 'no image match'
     echo 'docker build'
-    docker network create --subnet=192.168.80.10/24 br0
+    docker network create --subnet=192.168.80.10 br0
     docker build -t $1 .
     echo 'docker build success'
     docker run -it $1 -h --net=br0 --ip=192.168.80.10 $1 /bin/bash
@@ -25,16 +25,19 @@ if [[ $1 != "" ]]; then
     echo 'exist docker image'
     echo 'attach images'
 
-    dockerStatus=($(docker ps | grep -w $1))
+    dockerStatus=($(docker ps -a | grep -w $1))
 
     if [[ $dockerStatus ]]; then
 
       containerImage=($(docker container ls | grep -w $1))
 
-      if [[ containerImage ]]; then
+      if [[ $containerImage ]]; then
+        echo 'attach attach'
         docker attach "${dockerStatus[0]}"
       else
-        docker start -a "${dockerStatus[0]}"
+        echo 'attach start'
+        docker start "${dockerStatus[0]}"
+        docker attach "${dockerStatus[0]}"
       fi
     else
       echo 'error'
